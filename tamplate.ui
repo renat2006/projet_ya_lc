@@ -188,7 +188,7 @@ margin-right: 10px;
     <property name="frameShadow">
      <enum>QFrame::Raised</enum>
     </property>
-    <widget class="QLabel" name="im_2">
+    <widget class="QLabel" name="p2">
      <property name="geometry">
       <rect>
        <x>60</x>
@@ -204,13 +204,13 @@ margin-right: 10px;
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap>3x/Ресурс 2xxhdpi.png</pixmap>
+      <pixmap>3x/p2.png</pixmap>
      </property>
      <property name="scaledContents">
       <bool>true</bool>
      </property>
     </widget>
-    <widget class="QLabel" name="im_1">
+    <widget class="QLabel" name="p1">
      <property name="geometry">
       <rect>
        <x>300</x>
@@ -226,16 +226,16 @@ margin-right: 10px;
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap>3x/Ресурс 1xxhdpi.png</pixmap>
+      <pixmap>3x/p1.png</pixmap>
      </property>
      <property name="scaledContents">
       <bool>true</bool>
      </property>
     </widget>
-    <widget class="QLabel" name="im_3">
+    <widget class="QLabel" name="p3">
      <property name="geometry">
       <rect>
-       <x>570</x>
+       <x>568</x>
        <y>50</y>
        <width>211</width>
        <height>111</height>
@@ -248,7 +248,7 @@ margin-right: 10px;
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap>3x/Ресурс 2xxhdpi.png</pixmap>
+      <pixmap>3x/p3.png</pixmap>
      </property>
      <property name="scaledContents">
       <bool>true</bool>
