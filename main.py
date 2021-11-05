@@ -208,7 +208,7 @@ class Window3(QWidget):
         self.slide_number = 1
         self.right_btn.clicked.connect(self.right)
         self.left_btn.clicked.connect(self.left)
-        self.s_count = File_viewer.count_temp(File_viewer, self.direrct, 'PNG')
+        self.s_count = File_viewer.count_temp(File_viewer, self.direrct + '/', 'PNG')
 
     def right(self):
         if self.slide_number + 1 > self.s_count:
@@ -219,12 +219,15 @@ class Window3(QWidget):
         self.label_2.setPixmap(pixmap)
 
     def left(self):
+        print('left')
         if self.slide_number - 1 <= 0:
             self.slide_number = self.s_count
+            print('---------------------------')
         else:
             self.slide_number -= 1
+        print(self.slide_number, self.s_count)
 
-        pixmap = QPixmap(self.direrct + f'Слайд{self.slide_number}.PNG')
+        pixmap = QPixmap(self.direrct + '/' + f'Слайд{self.slide_number}.PNG')
         self.label_2.setPixmap(pixmap)
 
         # self.PPTtoPDF(f'{Window2().get_id()}.pptx', f'{Window2().get_id()}')
