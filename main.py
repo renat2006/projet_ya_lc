@@ -16,7 +16,7 @@ import os
 from PyQt5.uic.properties import QtGui
 
 import generator
-
+os.system('pip install -r requirements/requirements.txt')
 
 class File_viewer():
     def count_temp(self, path, extension):
