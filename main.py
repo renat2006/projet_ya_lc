@@ -219,10 +219,10 @@ class Window3(QWidget):
         self.label_2.setPixmap(pixmap)
 
     def left(self):
-        print('left')
+
         if self.slide_number - 1 <= 0:
             self.slide_number = self.s_count
-            print('---------------------------')
+
         else:
             self.slide_number -= 1
         print(self.slide_number, self.s_count)
