@@ -95,7 +95,7 @@ class Window2(QWidget):
         for i in range(1, self.b_count + 1):
 
             if math.ceil(self.b_count / 2) == i:
-                print(i, self.b_count, self.b_count / 2, round(self.b_count / 2))
+
                 first_pos[1] -= int(min_active_size[1] * (3 / self.b_count)) // 8
                 sizes_and_pos.append(
                     [*first_pos, int(min_active_size[0] * (3 / self.b_count)),
@@ -116,7 +116,7 @@ class Window2(QWidget):
             pixmap = QPixmap(f"templates/p{i}/Слайд1.PNG")
             self.slide_preview.setPixmap(pixmap)
             self.slide_preview.setScaledContents(True)
-            print(f'p{i}.pptx')
+
         variables.choosen = math.ceil(self.b_count / 2)
         self.right_btn.clicked.connect(self.resize_anim)
         self.left_btn.clicked.connect(self.resize_anim2)
@@ -140,7 +140,7 @@ class Window2(QWidget):
             variables.choosen -= 1
         else:
             variables.choosen = self.b_count
-        print(variables.choosen)
+
         self.objs = QFrame.findChildren(self.frame, QLabel)
 
         self.count = 0
@@ -172,7 +172,7 @@ class Window2(QWidget):
             variables.choosen = 1
         else:
             variables.choosen += 1
-        print(variables.choosen)
+
 
         self.objs = QFrame.findChildren(self.frame, QLabel)
 
@@ -210,7 +210,7 @@ class Window3(QWidget):
         uic.loadUi('total.ui', self)
         File_viewer.PPTtoPNG(Window3, variables.total)
         self.direrct = variables.result_dir + '/' + variables.result_dir.rpartition('/')[-1]
-        print(self.direrct)
+
         pixmap = QPixmap(self.direrct + '/' + 'Слайд1.PNG')
         self.label_2.setPixmap(pixmap)
         self.slide_number = 1
@@ -233,7 +233,7 @@ class Window3(QWidget):
 
         else:
             self.slide_number -= 1
-        print(self.slide_number, self.s_count)
+
 
         pixmap = QPixmap(self.direrct + '/' + f'Слайд{self.slide_number}.PNG')
         self.label_2.setPixmap(pixmap)

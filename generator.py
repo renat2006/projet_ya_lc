@@ -22,11 +22,11 @@ def unicode_cheker(text):
 
 
 def get_temp(self, id, theme, file_path):
-    print(file_path)
+
     variables.theme = theme
     image_count = 0
     wikipedia.set_lang("ru")
-    print(wikipedia.suggest(theme))
+
     if wikipedia.suggest(theme) != None:
         theme = wikipedia.suggest(theme)
     if wikipedia.search(theme) != []:
@@ -72,7 +72,7 @@ def get_temp(self, id, theme, file_path):
         im_names.append(f'{s_i_count}.{file_ending}')
         s_i_count += 1
 
-    print(page.url)
+
     for slide_number in range(len(presentation.slides)):
         slide = presentation.slides[slide_number]
         if slide_number == 0:
@@ -93,7 +93,7 @@ def get_temp(self, id, theme, file_path):
 
             image_count += 1
         else:
-            print(slide_number)
+
             if len(paragraphs) >= slide_number:
                 slide.shapes.title.text = titles[slide_number - 2]
                 slide.placeholders[1].text = ''.join(paragraphs[slide_number - 2][:3])
