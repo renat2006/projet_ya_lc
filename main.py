@@ -5,13 +5,15 @@ import os.path
 
 import comtypes.client
 from PyQt5.QtGui import QPixmap
-import get_id
+import variables
 from PyQt5 import uic, QtCore
 from PyQt5.QtCore import QPropertyAnimation, QPoint, QSize, QParallelAnimationGroup, QTimer
 from PyQt5.QtWidgets import *
 import os
 
 from PyQt5.uic.properties import QtGui
+
+import generator
 
 
 class File_viewer():
@@ -40,13 +42,6 @@ class File_viewer():
 
 # print(File_viewer.count_temp(File_viewer, 'templates/', 'pptx'))
 
-class Main_window4(QWidget):
-
-    def __init__(self):
-        super(Main_window4, self).__init__()
-        uic.loadUi('wait.ui', self)
-        self.progressBar.setValue(0)
-
 
 class Main_window(QWidget):
     def __init__(self):
@@ -56,6 +51,8 @@ class Main_window(QWidget):
         self.pushButton.clicked.connect(self.show_window_2_4)
 
     def show_window_2_4(self):
+
+        variables.theme = self.theme_input.text()
         self.progressBar.setVisible(True)
         progress = 0
         self.b_count = File_viewer.count_temp(File_viewer, 'templates/', 'pptx')
@@ -116,22 +113,27 @@ class Window2(QWidget):
             self.slide_preview.setPixmap(pixmap)
             self.slide_preview.setScaledContents(True)
             print(f'p{i}.pptx')
-        get_id.choosen = math.ceil(self.b_count / 2)
+        variables.choosen = math.ceil(self.b_count / 2)
         self.right_btn.clicked.connect(self.resize_anim)
         self.left_btn.clicked.connect(self.resize_anim2)
 
     def show_window_3(self):
+        file_path, _ = QFileDialog.getSaveFileName(self, "Выберите место для сохранения", "",
+                                                   "PPTX(*.pptx);;All Files(*.*) ")
 
+        if file_path == "":
+            return
         self.close()
+        generator.get_temp(self, variables.choosen, variables.theme, file_path)
         self.w3 = Window3()
         self.w3.show()
 
     def resize_anim(self):
-        if get_id.choosen - 1 != 0:
-            get_id.choosen -= 1
+        if variables.choosen - 1 != 0:
+            variables.choosen -= 1
         else:
-            get_id.choosen = self.b_count
-        print(get_id.choosen)
+            variables.choosen = self.b_count
+        print(variables.choosen)
         self.objs = QFrame.findChildren(self.frame, QLabel)
 
         self.count = 0
@@ -159,11 +161,11 @@ class Window2(QWidget):
 
     def resize_anim2(self):
 
-        if get_id.choosen + 1 > self.b_count:
-            get_id.choosen = 1
+        if variables.choosen + 1 > self.b_count:
+            variables.choosen = 1
         else:
-            get_id.choosen += 1
-        print(get_id.choosen)
+            variables.choosen += 1
+        print(variables.choosen)
 
         self.objs = QFrame.findChildren(self.frame, QLabel)
 
@@ -198,23 +200,26 @@ class Window3(QWidget):
     def __init__(self):
         super(Window3, self).__init__()
         uic.loadUi('total.ui', self)
-        self.direrct = f'templates/p{get_id.choosen}/'
-        pixmap = QPixmap(self.direrct + 'Слайд1.PNG')
+        File_viewer.PPTtoPNG(Window3, variables.total)
+        self.direrct = variables.result_dir + '/' + variables.result_dir.rpartition('/')[-1]
+        print(self.direrct)
+        pixmap = QPixmap(self.direrct + '/' + 'Слайд1.PNG')
         self.label_2.setPixmap(pixmap)
         self.slide_number = 1
         self.right_btn.clicked.connect(self.right)
         self.left_btn.clicked.connect(self.left)
         self.s_count = File_viewer.count_temp(File_viewer, self.direrct, 'PNG')
+
     def right(self):
         if self.slide_number + 1 > self.s_count:
             self.slide_number = 1
         else:
             self.slide_number += 1
-        pixmap = QPixmap(self.direrct + f'Слайд{self.slide_number}.PNG')
+        pixmap = QPixmap(self.direrct + '/' + f'Слайд{self.slide_number}.PNG')
         self.label_2.setPixmap(pixmap)
 
     def left(self):
-        if self.slide_number - 1 == 0:
+        if self.slide_number - 1 <= 0:
             self.slide_number = self.s_count
         else:
             self.slide_number -= 1
