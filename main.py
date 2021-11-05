@@ -5,6 +5,8 @@ import os.path
 
 import comtypes.client
 from PyQt5.QtGui import QPixmap
+
+import dialog
 import variables
 from PyQt5 import uic, QtCore
 from PyQt5.QtCore import QPropertyAnimation, QPoint, QSize, QParallelAnimationGroup, QTimer
@@ -123,7 +125,10 @@ class Window2(QWidget):
 
         if file_path == "":
             return
+
         self.close()
+        dlg = dialog.CustomDialog(f'Пожалуйста ожидайте, по готовности откроется меню предпросмотра')
+        dlg.exec()
         generator.get_temp(self, variables.choosen, variables.theme, file_path)
         self.w3 = Window3()
         self.w3.show()
@@ -199,6 +204,7 @@ class Window3(QWidget):
 
     def __init__(self):
         super(Window3, self).__init__()
+
         uic.loadUi('total.ui', self)
         File_viewer.PPTtoPNG(Window3, variables.total)
         self.direrct = variables.result_dir + '/' + variables.result_dir.rpartition('/')[-1]

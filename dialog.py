@@ -3,7 +3,7 @@ import variables
 
 
 class CustomDialog(QDialog):
-    def __init__(self, mess, title='Внимание', is_ok=True):
+    def __init__(self, mess, is_ok=True, title='Внимание'):
         super().__init__()
 
         self.setWindowTitle(title)
@@ -23,5 +23,3 @@ class CustomDialog(QDialog):
             self.layout.addWidget(self.buttonBox)
 
         # message = QLabel(f'К сожалению нам не удалось найти "{variables.theme}"')
-
-
