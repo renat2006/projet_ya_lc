@@ -1,3 +1,5 @@
+import os
+os.system('pip install -r requirements/requirements.txt')
 import math
 import sys
 import time
@@ -11,12 +13,12 @@ import variables
 from PyQt5 import uic, QtCore
 from PyQt5.QtCore import QPropertyAnimation, QPoint, QSize, QParallelAnimationGroup, QTimer
 from PyQt5.QtWidgets import *
-import os
+
 
 from PyQt5.uic.properties import QtGui
 
 import generator
-os.system('pip install -r requirements/requirements.txt')
+
 
 class File_viewer():
     def count_temp(self, path, extension):
