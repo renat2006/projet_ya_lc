@@ -190,6 +190,39 @@ background: #1D5573 ;
     <bool>true</bool>
    </property>
   </widget>
+  <widget class="QPushButton" name="menu">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>40</y>
+     <width>71</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#menu:hover{
+border-radius: 10px;
+background: rgba(255, 255, 255, 0.5);
+}
+#menu{
+background: transparent;
+}
+</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/squares.png</normaloff>icons/squares.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>64</width>
+     <height>64</height>
+    </size>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

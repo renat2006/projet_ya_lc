@@ -1,8 +1,14 @@
 import time
 
 import wikipedia
+from PyQt5 import uic
+from PyQt5.QtWidgets import QWidget
 from pptx.util import Pt
 import urllib.request
+
+import dialog
+import loading
+
 from dialog import CustomDialog
 from pptx import Presentation
 import variables
@@ -22,25 +28,35 @@ def unicode_cheker(text):
 
 
 def get_temp(self, id, theme, file_path):
+    print(file_path)
 
     variables.theme = theme
     image_count = 0
     wikipedia.set_lang("ru")
+    corred = wikipedia.suggest(theme)
+    search = wikipedia.search(theme)
+    ind = -1
+    progress = 0
 
-    if wikipedia.suggest(theme) != None:
-        theme = wikipedia.suggest(theme)
-    if wikipedia.search(theme) != []:
+    if corred != None:
+        theme = corred
+    if search != []:
+        try:
+            page = wikipedia.page(theme)
+        except wikipedia.DisambiguationError:
+            dlg = dialog.CustomDialog(f'По запросу "{theme}" нашлось несколько результатов, пожалуйста уточните запрос')
+            dlg.exec()
+            exit()
 
-        page = wikipedia.page(theme)
+
     else:
-        variables.curr_theme = wikipedia.suggest(theme)
+        variables.curr_theme = corred
 
         dlg = CustomDialog(f'К сожалению нам не удалось найти "{variables.theme}"')
         if dlg.exec():
             exit()
 
-
-    template = f'templates/p{id}.pptx'
+    template = id
     presentation = Presentation(template)
 
     result_dir = file_path.replace('.pptx', '')
@@ -65,19 +81,28 @@ def get_temp(self, id, theme, file_path):
         file_ending = im.rpartition('.')[-1]
         if not (file_ending in 'png jpg gif jpeg'):
             continue
-        resource = urllib.request.urlopen(im)
+        try:
+            resource = urllib.request.urlopen(im)
+        except urllib.error.HTTPError:
+            dlg = dialog.CustomDialog('Сервис перегружен, попробуйте позднее')
+            dlg.exec()
+            exit()
+
         out = open(im_save_direc + "/" + f'{s_i_count}.{file_ending}', 'wb')
         out.write(resource.read())
         out.close()
         im_names.append(f'{s_i_count}.{file_ending}')
         s_i_count += 1
+        time.sleep(0.5)
 
-
-    for slide_number in range(len(presentation.slides)):
+    colored_slides_len = len(presentation.slides)
+    for slide_number in range(colored_slides_len):
         slide = presentation.slides[slide_number]
+
         if slide_number == 0:
-            slide.shapes.title.text = wikipedia.search(theme)[0]
+            slide.shapes.title.text = search[0]
             slide.placeholders[1].text = f'{page.url}'
+
         elif slide_number == 1:
 
             slide.shapes.title.text = theme
@@ -93,12 +118,37 @@ def get_temp(self, id, theme, file_path):
 
             image_count += 1
         else:
-
+            print(slide_number)
             if len(paragraphs) >= slide_number:
                 slide.shapes.title.text = titles[slide_number - 2]
-                slide.placeholders[1].text = ''.join(paragraphs[slide_number - 2][:3])
+                slide.placeholders[1].text = ''.join(paragraphs[slide_number - 2])
                 for paragraph in slide.placeholders[1].text_frame.paragraphs:
                     for run in paragraph.runs:
-                        run.font.size = Pt(14)
+                        run.font.size = Pt(11)
+    print(f'max was {variables.max_slides}')
+    for slide_number, slide_text in enumerate(paragraphs[len(presentation.slides) - 1:]):
+        print(slide_number, slide)
+        if slide_text == [] and titles[slide_number + colored_slides_len - 1] == []:
+            break
+        if slide_number >= variables.max_slides - colored_slides_len and variables.max_slides - colored_slides_len != 0:
+            break
+        if 'Ссыл' in titles[slide_number + colored_slides_len - 1]:
+            ind = slide_number + colored_slides_len - 1
+            continue
+        slide.shapes.title.text = titles[slide_number + colored_slides_len - 1]
+
+        slide = presentation.slides.add_slide(presentation.slide_layouts[8])
+        slide.placeholders[2].text = ''.join(slide_text)
+        if s_i_count > image_count:
+            slide.placeholders[1].insert_picture(im_save_direc + "/" + im_names[image_count])
+        for paragraph in slide.placeholders[2].text_frame.paragraphs:
+            for run in paragraph.runs:
+                run.font.size = Pt(11)
+        image_count += 1
+    slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+    slide.shapes.title.text = 'Источники'
+
+    slide.placeholders[1].text = ''.join(paragraphs[ind])
+
     presentation.save(result_dir + "/" + file_name)
     variables.total = result_dir + "/" + file_name

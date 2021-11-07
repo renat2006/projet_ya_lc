@@ -13,10 +13,10 @@ def parse(content):
         first_title = new_lines.index(titles[0])
         for title in titles[1:]:
             ind = new_lines.index(title)
-            if new_lines[first_title + 1:ind] != [] and new_lines[first_title + 1:ind] != '':
-                paragraphs.append(new_lines[first_title + 1:ind])
-            else:
-                titles.remove(title)
-            first_title = ind
 
-        return titles, paragraphs
+            paragraphs.append(new_lines[first_title + 1:ind])
+
+            first_title = ind
+    paragraphs.append(new_lines[first_title:])
+
+    return titles, paragraphs

@@ -1,4 +1,8 @@
 import os
+
+import db
+import loading
+
 os.system('pip install -r requirements/requirements.txt')
 import math
 import sys
@@ -6,14 +10,13 @@ import time
 import os.path
 
 import comtypes.client
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QIcon
 
 import dialog
 import variables
 from PyQt5 import uic, QtCore
 from PyQt5.QtCore import QPropertyAnimation, QPoint, QSize, QParallelAnimationGroup, QTimer
 from PyQt5.QtWidgets import *
-
 
 from PyQt5.uic.properties import QtGui
 
@@ -47,31 +50,98 @@ class File_viewer():
 # print(File_viewer.count_temp(File_viewer, 'templates/', 'pptx'))
 
 
+class Tem_view(QWidget):
+
+    def __init__(self):
+        super(Tem_view, self).__init__()
+        self.del_rows = 0
+        uic.loadUi('temp.ui', self)
+        for i in db.select_table('templates', 'direc', 'is_del'):
+            if i != () and i[1] != 1:
+                print(i)
+                self.tm_view_widget.addItem(i[0])
+        self.del_btn.clicked.connect(self.del_item)
+        self.new_btn.clicked.connect(self.insert_new)
+
+    def del_item(self):
+        print(self.tm_view_widget.currentItem().text())
+        db.update('templates', 'is_del', 1, 'id',
+                  f'{self.tm_view_widget.row(self.tm_view_widget.currentItem()) + self.del_rows}')
+        self.tm_view_widget.takeItem(self.tm_view_widget.row(self.tm_view_widget.currentItem()))
+        self.del_rows += 1
+
+    def insert_new(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Выберите шаблон", "",
+                                                   "PPTX(*.pptx)")
+
+        if file_path == "":
+            return
+
+        db.insert('templates', 'direc', str(file_path))
+        self.tm_view_widget.addItem(file_path)
+
+
 class Main_window(QWidget):
     def __init__(self):
         super(Main_window, self).__init__()
         uic.loadUi('main_window.ui', self)
+        self.setWindowTitle('Настройки')
+        self.setWindowIcon(QIcon('ico/1.png'))
         self.progressBar.setVisible(False)
         self.pushButton.clicked.connect(self.show_window_2_4)
+        self.menu.clicked.connect(self.show_menu)
 
     def show_window_2_4(self):
 
         variables.theme = self.theme_input.text()
         self.progressBar.setVisible(True)
         progress = 0
-        self.b_count = File_viewer.count_temp(File_viewer, 'templates/', 'pptx')
+        self.b_count = 0
+        templates = db.select_table('templates', 'direc', 'is_del')
+        for i in templates:
+            if i[1] != 1:
+                self.b_count += 1
+        print(self.b_count)
 
-        for i in range(1, self.b_count + 1):
-            progress += int(100 / self.b_count)
-            self.progressBar.setValue(progress)
-            if not (os.path.exists(f'templates/p{i}')):
-                File_viewer.PPTtoPNG(File_viewer, f'templates/p{i}.pptx')
+        for i in range(len(templates)):
+            self.t_dir = templates[i][0].rpartition('/')[0] + '/' + \
+                         templates[i][0].rpartition('/')[-1].rpartition('.')[0]
+            if not os.path.exists(self.t_dir):
+                progress += int(100 / i)
+
+                File_viewer.PPTtoPNG(File_viewer, templates[i][0])
+                self.progressBar.setValue(progress)
                 time.sleep(3)
 
         self.w2 = Window2()
 
         self.w2.show()
         self.close()
+
+    def show_menu(self):
+        self.menu_win = Menu()
+        self.menu_win.show()
+
+
+class Menu(QWidget):
+
+    def __init__(self):
+        self.count = 0
+
+        super(Menu, self).__init__()
+
+        uic.loadUi('menu.ui', self)
+        self.spinBox.setMinimum(variables.max_slides)
+        self.spinBox.valueChanged.connect(self.change_value)
+        self.change_temp.clicked.connect(self.temp_view)
+
+    def change_value(self):
+        variables.max_slides = self.spinBox.value()
+        self.spinBox.setMinimum(variables.max_slides)
+
+    def temp_view(self):
+        self.tw = Tem_view()
+        self.tw.show()
 
 
 class Window2(QWidget):
@@ -83,6 +153,9 @@ class Window2(QWidget):
         super(Window2, self).__init__()
 
         uic.loadUi('tamplate.ui', self)
+
+        self.setWindowTitle('Выбор шаблонов')
+        self.setWindowIcon(QIcon('ico/1.png'))
         self.pushButton.clicked.connect(self.show_window_3)
         # self.objs = QFrame.findChildren(self.frame, QLabel)
 
@@ -90,12 +163,21 @@ class Window2(QWidget):
         min_active_size = [240, 140]
         first_pos = [60, 50]
         sizes_and_pos = []
-        self.b_count = File_viewer.count_temp(File_viewer, 'templates/', 'pptx')
-
+        self.b_count = 0
+        templates = db.select_table('templates', 'direc', 'is_del')
+        self.active_temp = []
+        self.used_temp = []
+        for i in templates:
+            self.t_dir1 = i[0].rpartition('/')[0] + '/' + \
+                          i[0].rpartition('/')[-1].rpartition('.')[0]
+            if i[1] != 1:
+                self.b_count += 1
+                self.active_temp.append(self.t_dir1)
+                self.used_temp.append(i[0])
         for i in range(1, self.b_count + 1):
 
             if math.ceil(self.b_count / 2) == i:
-
+                print(i, self.b_count, self.b_count / 2, round(self.b_count / 2))
                 first_pos[1] -= int(min_active_size[1] * (3 / self.b_count)) // 8
                 sizes_and_pos.append(
                     [*first_pos, int(min_active_size[0] * (3 / self.b_count)),
@@ -113,10 +195,12 @@ class Window2(QWidget):
             self.slide_preview.setText(str(i))
             self.slide_preview.setGeometry(QtCore.QRect(*sizes_and_pos[i - 1]))
             self.slide_preview.setAutoFillBackground(True)
-            pixmap = QPixmap(f"templates/p{i}/Слайд1.PNG")
+            self.t_dir = templates[i - 1][0].rpartition('/')[0] + '/' + \
+                         templates[i - 1][0].rpartition('/')[-1].rpartition('.')[0]
+            pixmap = QPixmap(f"{self.active_temp[i - 1]}/Слайд1.PNG")
             self.slide_preview.setPixmap(pixmap)
             self.slide_preview.setScaledContents(True)
-
+            print(f'p{i}.pptx')
         variables.choosen = math.ceil(self.b_count / 2)
         self.right_btn.clicked.connect(self.resize_anim)
         self.left_btn.clicked.connect(self.resize_anim2)
@@ -129,9 +213,12 @@ class Window2(QWidget):
             return
 
         self.close()
-        dlg = dialog.CustomDialog(f'Пожалуйста ожидайте, по готовности откроется меню предпросмотра')
+
+        dlg = dialog.CustomDialog('''Пожалуйста ожидайте, по готовности откроется меню предпросмотра(не забудьте нажать ok).
+        Во время данного процесса не закрывайте окна PowerPoint.''')
         dlg.exec()
-        generator.get_temp(self, variables.choosen, variables.theme, file_path)
+
+        generator.get_temp(self, self.used_temp[variables.choosen - 1], variables.theme, file_path)
         self.w3 = Window3()
         self.w3.show()
 
@@ -140,7 +227,7 @@ class Window2(QWidget):
             variables.choosen -= 1
         else:
             variables.choosen = self.b_count
-
+        print(variables.choosen)
         self.objs = QFrame.findChildren(self.frame, QLabel)
 
         self.count = 0
@@ -172,7 +259,7 @@ class Window2(QWidget):
             variables.choosen = 1
         else:
             variables.choosen += 1
-
+        print(variables.choosen)
 
         self.objs = QFrame.findChildren(self.frame, QLabel)
 
@@ -208,9 +295,11 @@ class Window3(QWidget):
         super(Window3, self).__init__()
 
         uic.loadUi('total.ui', self)
+        self.setWindowTitle('Предпросмотр')
+        self.setWindowIcon(QIcon('ico/1.png'))
         File_viewer.PPTtoPNG(Window3, variables.total)
         self.direrct = variables.result_dir + '/' + variables.result_dir.rpartition('/')[-1]
-
+        print(self.direrct)
         pixmap = QPixmap(self.direrct + '/' + 'Слайд1.PNG')
         self.label_2.setPixmap(pixmap)
         self.slide_number = 1
@@ -233,7 +322,7 @@ class Window3(QWidget):
 
         else:
             self.slide_number -= 1
-
+        print(self.slide_number, self.s_count)
 
         pixmap = QPixmap(self.direrct + '/' + f'Слайд{self.slide_number}.PNG')
         self.label_2.setPixmap(pixmap)
