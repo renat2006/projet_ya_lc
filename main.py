@@ -107,7 +107,7 @@ class Main_window(QWidget):
             self.t_dir = templates[i][0].rpartition('/')[0] + '/' + \
                          templates[i][0].rpartition('/')[-1].rpartition('.')[0]
             if not os.path.exists(self.t_dir):
-                progress += int(100 / i)
+                progress += int(100 / self.b_count)
 
                 File_viewer.PPTtoPNG(File_viewer, templates[i][0])
                 self.progressBar.setValue(progress)
